@@ -1,24 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" systemVersion="17A277" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="JdU-GW-73q">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="MarkerFeltThin.ttf">
+            <string>MarkerFelt-Thin</string>
+        </array>
+    </customFonts>
     <scenes>
         <!--View Controller-->
-        <scene sceneID="tne-QT-ifu">
+        <scene sceneID="iBN-uc-cgl">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                <viewController id="JdU-GW-73q" customClass="ViewController" customModule="PhotoBooth" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="4ZF-va-Now">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9qL-Km-kml" customClass="LiveCameraView" customModule="LiveCameraView">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0q5-VI-az4">
+                                <rect key="frame" x="137" y="559" width="100" height="64"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="wCE-Kh-Pqc"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="43"/>
+                                <state key="normal" title="📸"/>
+                                <connections>
+                                    <action selector="capturePhotoButtonTapped:" destination="JdU-GW-73q" eventType="touchUpInside" id="SsJ-Zj-agh"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xKM-2C-FMZ">
+                                <rect key="frame" x="158.5" y="279.5" width="57" height="109"/>
+                                <fontDescription key="fontDescription" name="MarkerFelt-Thin" family="Marker Felt" pointSize="100"/>
+                                <color key="textColor" red="0.32589994330224653" green="0.68395806347150256" blue="0.19261603779176659" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view alpha="0.0" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pay-KZ-WRO">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="9qL-Km-kml" firstAttribute="trailing" secondItem="GZ4-BC-4ZM" secondAttribute="trailing" id="Dxv-I9-1J2"/>
+                            <constraint firstItem="GZ4-BC-4ZM" firstAttribute="bottom" secondItem="0q5-VI-az4" secondAttribute="bottom" constant="44" id="J2V-4R-C4S"/>
+                            <constraint firstItem="0q5-VI-az4" firstAttribute="centerX" secondItem="4ZF-va-Now" secondAttribute="centerX" id="Q39-aJ-kDo"/>
+                            <constraint firstAttribute="trailing" secondItem="Pay-KZ-WRO" secondAttribute="trailing" id="Wnt-VT-DYK"/>
+                            <constraint firstItem="Pay-KZ-WRO" firstAttribute="top" secondItem="4ZF-va-Now" secondAttribute="top" id="X2G-G8-Aed"/>
+                            <constraint firstItem="9qL-Km-kml" firstAttribute="top" secondItem="4ZF-va-Now" secondAttribute="top" id="acM-rN-s1o"/>
+                            <constraint firstItem="9qL-Km-kml" firstAttribute="bottom" secondItem="GZ4-BC-4ZM" secondAttribute="bottom" id="bt7-17-XRG"/>
+                            <constraint firstItem="xKM-2C-FMZ" firstAttribute="centerX" secondItem="4ZF-va-Now" secondAttribute="centerX" id="eAn-EY-FXN"/>
+                            <constraint firstItem="Pay-KZ-WRO" firstAttribute="bottom" secondItem="GZ4-BC-4ZM" secondAttribute="bottom" id="qNg-li-47n"/>
+                            <constraint firstItem="9qL-Km-kml" firstAttribute="leading" secondItem="GZ4-BC-4ZM" secondAttribute="leading" id="tAp-cm-LKn"/>
+                            <constraint firstItem="xKM-2C-FMZ" firstAttribute="centerY" secondItem="4ZF-va-Now" secondAttribute="centerY" id="xwF-En-AEu"/>
+                            <constraint firstItem="Pay-KZ-WRO" firstAttribute="leading" secondItem="GZ4-BC-4ZM" secondAttribute="leading" id="yPx-30-Cxn"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="GZ4-BC-4ZM"/>
                     </view>
+                    <connections>
+                        <outlet property="cameraPreviewView" destination="9qL-Km-kml" id="rY0-jr-MOe"/>
+                        <outlet property="countdownLabel" destination="xKM-2C-FMZ" id="nRs-Px-a7F"/>
+                        <outlet property="flashView" destination="Pay-KZ-WRO" id="LbR-pn-k3Z"/>
+                    </connections>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="BDs-L4-bLF" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="309.60000000000002" y="-23.838080959520241"/>
         </scene>
     </scenes>
 </document>
