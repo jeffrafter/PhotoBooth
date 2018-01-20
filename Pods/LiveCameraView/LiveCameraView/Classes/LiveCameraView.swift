@@ -28,13 +28,17 @@ open class LiveCameraView: UIView {
         }
     }
     
-    fileprivate let camera = Camera()
+    let camera = Camera()
     
     lazy fileprivate var doubleTapGesture: UITapGestureRecognizer = {
         let doubleTap = UITapGestureRecognizer(target: self, action: #selector(LiveCameraView.handleDoubleTapGesture))
         doubleTap.numberOfTapsRequired = 2
         return doubleTap
     }()
+    
+    open func device() -> AVCaptureDevice? {
+        return camera.device()
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)

@@ -8,16 +8,40 @@
 
 import UIKit
 
+extension UIImage {
+    func square() -> UIImage? {
+        if size.width == size.height {
+            return self
+        }
+        
+        let cropWidth = min(size.width, size.height)
+        
+        let rect = CGRect(
+            x: (size.width - cropWidth) / 2.0,
+            y: (size.height - cropWidth) / 2.0,
+            width: cropWidth,
+            height: cropWidth
+        )
+
+        UIGraphicsBeginImageContextWithOptions(rect.size, false, self.scale)
+        self.draw(at: CGPoint(x: -rect.origin.x, y: -rect.origin.y))
+        let cropped = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return cropped
+    }
+}
+
 /// A `UIPrintPageRenderer` subclass to print an image.
 class Renderer: UIPrintPageRenderer {
     // MARK: Properties
     
-    var image: UIImage
+    var images: [UIImage]
     
     // MARK: Initilization
     
-    init(image: UIImage) {
-        self.image = image
+    init(images: [UIImage]) {
+        self.images = images
     }
     
     // MARK: UIPrintPageRenderer Overrides
@@ -26,6 +50,44 @@ class Renderer: UIPrintPageRenderer {
     }
     
     override func drawPage(at pageIndex: Int, in printableRect: CGRect) {
+        drawStripsPage(at: pageIndex, in: printableRect)
+    }
+    
+    func drawStripsPage(at pageIndex: Int, in printableRect: CGRect) {
+        print(printableRect)
+        print(paperRect)
+        
+        let width = printableRect.width
+        let height = printableRect.height
+        
+        let imageWidth = CGFloat(96.0)
+        let imageHeight = CGFloat(96.0)
+        
+        // Two photos across like: [ space PHOTO space | space PHOTO space ]
+        let horzSpace = (width - (2 * imageWidth) - 1) / 4
+        // Four photos down like [ space PHOTO PHOTO PHOTO PHOTO space ]
+        let vertSpace = (height - (4 * imageHeight)) / 2
+        
+        var index = CGFloat(0)
+        
+        for image in images {
+            if let cropped = image.square() {
+                let left = CGRect(x: horzSpace, y: vertSpace + (imageHeight * index), width: imageWidth, height: imageHeight)
+                cropped.draw(in: left)
+                
+                let right = CGRect(x: (horzSpace * 3) + imageWidth + 1, y: vertSpace + (imageHeight * index), width: imageWidth, height: imageHeight)
+                cropped.draw(in: right)
+                print("Index: \(index)")
+                print(cropped)
+                print("Left: \(left)")
+                print("Right: \(right)")
+            }
+            index += 1
+        }
+        print("done")
+    }
+    
+    func drawVignettePage(at pageIndex: Int, in printableRect: CGRect) {
         /*
          When `drawPageAtIndex(_:inRect:)` is invoked, `paperRect` reflects the
          size of the paper we are printing on and `printableRect` reflects the
@@ -42,6 +104,10 @@ class Renderer: UIPrintPageRenderer {
          clipping.
          */
         let fillsSheet = paperSize == imageableAreaSize
+        
+        guard let image = images.first else {
+            return
+        }
         
         let imageSize = image.size
         

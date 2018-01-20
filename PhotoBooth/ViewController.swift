@@ -22,6 +22,8 @@ class ViewController: UIViewController {
     
     var funLabel: UILabel? = nil
     
+    var capturing = false
+    
     @IBOutlet weak var flashView: UIView!
     
     var currentPrinter: UIPrinter? = nil
@@ -32,43 +34,69 @@ class ViewController: UIViewController {
     @IBOutlet weak var cameraPreviewView: LiveCameraView! {
         didSet {
             cameraPreviewView.videoGravity = .resizeAspectFill
+            
+            if let device = cameraPreviewView.device() {
+                try! device.lockForConfiguration()
+                device.exposureMode = .continuousAutoExposure
+                if device.isFocusModeSupported(.continuousAutoFocus) {
+                    device.focusMode = .continuousAutoFocus
+                }
+                device.unlockForConfiguration()
+            }
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        reset()
+        countdownLabel.alpha = 0
     }
     
     override func viewDidAppear(_ animated: Bool) {
         if currentPrinter == nil {
-            //            selectPrinter()
+            selectPrinter()
         }
     }
     
     @IBAction func capturePhotoButtonTapped(_ sender: Any) {
+        guard let _ = currentPrinter else {
+            selectPrinter()
+            return
+        }
+        
+        if capturing {
+          return
+        }
+        capturing = true
+        count = 3
         showEncouragingPhrase()
     }
 
     @objc private func showEncouragingPhrase() {
+        countdownLabel.alpha = 0
+
         let phrases = [
-            "You look great!",
-            "Oh hell yeah!",
-            "Nice butt!",
-            "Beautiful!",
-            "Awesome!",
-            "LOLOLOLOL"
+            "You look great! 💁",
+            "Love the camera 💗",
+            "Oh yeah! ⚡️",
+            "Niiiiceeeee!",
+            "So cooooool! 😎"
+            "Hot stuff! 🌞",
+            "Beautiful! 💋",
+            "Awesome! ✨",
+            "Amazing!",
+            "LOLOLOLOL 🤣",
+            "Gimme Blue Steele 🔹",
+            "Gavin stole your wallet 😱"
         ]
         
         let phrase = phrases.sample()
         
-        
         funLabel = createFunLabel(phrase)
         view.addSubview(funLabel!)
+
         funLabel?.frame = view.frame
         funLabel?.frame.size.width -= 40
-        funLabel?.center = view.center≥
+        funLabel?.center = view.center
         funLabel?.adjustsFontSizeToFitWidth = true
         funLabel?.textAlignment = .center
         
@@ -92,16 +120,22 @@ class ViewController: UIViewController {
     @objc private func startCountdown() {
         funLabel?.removeFromSuperview()
         
+        count = 4
         let timer = Timer(timeInterval: 1.0, target: self, selector: #selector(fireTimer(_:)), userInfo: nil, repeats: true)
+        
         RunLoop.current.add(timer, forMode: .defaultRunLoopMode)
         
-        countdownLabel.alpha = 1.0
         fireTimer(timer)
     }
 
     @objc private func fireTimer(_ timer: Timer) {
-        countdownLabel.text = "\(count)"
-    
+        if count == 4 {
+            countdownLabel.text = "Get ready!"
+        } else {
+            countdownLabel.text = "\(count)"
+        }
+        countdownLabel.alpha = 1.0
+
         if count <= 0 {
             UIView.animate(withDuration: 0.1, animations: {
                 self.flashView.alpha = 1.0
@@ -117,7 +151,6 @@ class ViewController: UIViewController {
                 if let image = image {
                     self.captures.append(image)
                     if self.captures.count < 4 {
-                        self.reset()
                         self.showEncouragingPhrase()
                     } else {
                         self.done()
@@ -130,31 +163,40 @@ class ViewController: UIViewController {
     }
     
     private func done() {
-        print("done: \(captures)")
-        reset()
+        saveImages()
+        printImages()
+        capturing = false
+        count = 3
+        countdownLabel.alpha = 0
+    }
+    
+    private func saveImages() {
+        for image in captures {
+            if let cropped = image.square() {
+                UIImageWriteToSavedPhotosAlbum(cropped, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
+            }
+        }
+    }
+    
+    @objc func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            print(error.localizedDescription)
+        } else {
+            print("Saved \(image)")
+        }
     }
 
-    private func printImage(_ image: UIImage?) {
-        
-        guard let printer = currentPrinter,
-            let image = image else { return }
+    private func printImages() {
+        guard let printer = currentPrinter else { return }
         
         let printInteraction = UIPrintInteractionController.shared
-        let printPageRenderer = Renderer(image: image)
+        let printPageRenderer = Renderer(images: captures)
         
         // Create a print info object for the activity.
         let printInfo = UIPrintInfo.printInfo()
-        
-        /*
-         This application prints photos. UIKit will pick a paper size and print
-         quality appropriate for this content type.
-         */
         printInfo.outputType = .photo
-        
-        // Use the name from the image metadata we've set.
-        printInfo.jobName = "Horse"
+        printInfo.jobName = "PhotoBooth"
         printInteraction.printPageRenderer = printPageRenderer
-        
         printInteraction.printInfo = printInfo
         printInteraction.print(to: printer) { (controller, printed, error) in
             if let error = error {
@@ -169,11 +211,6 @@ class ViewController: UIViewController {
         pickerController.present(from: CGRect(x: 0, y: 0, width: 0, height: 0), in: self.view, animated: false, completionHandler: { (controller, picked, error) in
             self.currentPrinter = controller.selectedPrinter
         })
-    }
-    
-    private func reset() {
-        countdownLabel.alpha = 0
-        count = 3
     }
 }
 
