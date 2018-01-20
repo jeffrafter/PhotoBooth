@@ -1,0 +1,6 @@
+framework module LiveCameraView {
+  umbrella header "LiveCameraView-umbrella.h"
+
+  export *
+  module * { export * }
+}

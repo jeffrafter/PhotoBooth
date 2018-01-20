@@ -9,6 +9,3 @@
 *.xcuserstate
 project.xcworkspace/
 xcuserdata/
-
-# Podfiles
-Pods/
