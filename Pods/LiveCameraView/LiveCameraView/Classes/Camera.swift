@@ -9,7 +9,7 @@
 import AVFoundation
 import UIKit
 
-class Camera: AVCaptureVideoDataOutputSampleBufferDelegate {
+class Camera {
     
     var gravity = AVLayerVideoGravity.resizeAspect {
         didSet {
@@ -27,8 +27,6 @@ class Camera: AVCaptureVideoDataOutputSampleBufferDelegate {
     fileprivate lazy var sessionQueue: DispatchQueue = {
         return DispatchQueue(label: "com.mikekavouras.LiveCameraView.capture_session")
     }()
-    
-    fileprivate let videoOutput = AVCaptureVideoDataOutput()
     
     fileprivate let output = AVCaptureStillImageOutput()
     
@@ -53,13 +51,9 @@ class Camera: AVCaptureVideoDataOutputSampleBufferDelegate {
         session.sessionPreset = AVCaptureSession.Preset.photo
         checkPermissions()
     }
-
     
     func startStreaming() {
         showDeviceForPosition(.front)
-        
-        videoOutput.setSampleBufferDelegate(self,
-                                            queue: dispatch_queue_create("sample buffer delegate", DISPATCH_QUEUE_SERIAL))
         
         if session.canAddOutput(output) {
             session.addOutput(output)
