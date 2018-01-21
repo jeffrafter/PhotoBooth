@@ -79,7 +79,7 @@ class ViewController: UIViewController {
             "Love the camera 💗",
             "Oh yeah! ⚡️",
             "Niiiiceeeee!",
-            "So cooooool! 😎"
+            "So cooooool! 😎",
             "Hot stuff! 🌞",
             "Beautiful! 💋",
             "Awesome! ✨",
