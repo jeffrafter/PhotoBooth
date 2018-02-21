@@ -8,6 +8,7 @@
 
 import UIKit
 import LiveCameraView
+import AVFoundation
 
 extension Array {
     func sample() -> Element {
@@ -63,6 +64,17 @@ class ViewController: UIViewController {
             return
         }
         
+        // If there is no camera we can just skip and test the layout
+        if AVCaptureDevice.devices().count == 0 {
+            self.captures.append(fakeImage())
+            self.captures.append(fakeImage())
+            self.captures.append(fakeImage())
+            self.captures.append(fakeImage())
+            printImages()
+            reset()
+            return
+        }
+        
         if capturing {
           return
         }
@@ -84,7 +96,7 @@ class ViewController: UIViewController {
             "Beautiful! 💋",
             "Awesome! ✨",
             "Amazing!",
-            "LOLOLOLOL 🤣",
+            "LOLOLOLOL 😂",
             "Gimme Blue Steele 🔹",
             "Gavin stole your wallet 😱"
         ]
@@ -148,27 +160,39 @@ class ViewController: UIViewController {
             timer.invalidate()
             
             self.cameraPreviewView.captureStill { image in
-                if let image = image {
-                    self.captures.append(image)
-                    if self.captures.count < 4 {
-                        self.showEncouragingPhrase()
-                    } else {
-                        self.done()
-                    }
+                let image = image ?? self.fakeImage()
+                    
+                self.captures.append(image)
+                if self.captures.count < 4 {
+                    self.showEncouragingPhrase()
+                } else {
+                    self.done()
                 }
+                
             }
 
         }
         count = count - 1
     }
     
+    private func fakeImage() -> UIImage {
+        let name = "Dennis\(self.captures.count + 1)"
+        return UIImage(named: name)!
+    }
+    
     private func done() {
         saveImages()
         printImages()
+        reset()
+    }
+    
+    private func reset() {
         capturing = false
+        captures = []
         count = 3
         countdownLabel.alpha = 0
     }
+
     
     private func saveImages() {
         for image in captures {

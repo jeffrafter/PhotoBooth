@@ -37,6 +37,10 @@ class Camera {
         return input.device.position
     }
     
+    fileprivate var hasCamera: Bool {
+        return AVCaptureDevice.devices().count > 0
+    }
+    
     fileprivate var input: AVCaptureDeviceInput? {
         guard let inputs = session.inputs as? [AVCaptureDeviceInput] else { return nil }
         let captureDevice = inputs.filter { $0.device.hasMediaType(AVMediaType.video) }.first
@@ -89,6 +93,11 @@ class Camera {
                 return
             }
             
+            guard buffer != nil else {
+                done(nil)
+                return
+            }
+            
             let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer!)
             
             guard let image = UIImage(data: imageData!),
@@ -112,6 +121,11 @@ class Camera {
     }
     
     fileprivate func captureImage(_ completion: @escaping (CMSampleBuffer?, Error?) -> Void) {
+        guard hasCamera else {
+            completion(nil, nil)
+            return
+        }
+        
         let connection = self.output.connection(with: AVMediaType.video)
         connection?.videoOrientation = AVCaptureVideoOrientation(rawValue: UIDeviceOrientation.portrait.rawValue)!
         
