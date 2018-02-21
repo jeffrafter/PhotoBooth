@@ -19,13 +19,34 @@ extension Array {
 
 class ViewController: UIViewController {
     
-    var captures: [UIImage] = []
-    
     var funLabel: UILabel? = nil
     
-    var capturing = false
+    var capturing = false {
+        didSet {
+            captureButton.isHidden = capturing
+            captureStackView.isHidden = !capturing
+        }
+    }
     
+    var captures: [UIImage] = [] {
+        didSet {
+            if captures.isEmpty {
+                captureImageViews.forEach { $0.image = nil }
+            } else {
+                let index = captures.count - 1
+                captureImageViews[index].image = captures[index]
+            }
+        }
+    }
+    
+    @IBOutlet weak var captureStackView: UIStackView!
+    @IBOutlet var captureImageViews: [UIImageView]!
     @IBOutlet weak var flashView: UIView!
+    @IBOutlet weak var captureButton: UIButton! {
+        didSet {
+            captureButton.layer.cornerRadius = captureButton.frame.size.height / 2
+        }
+    }
     
     var currentPrinter: UIPrinter? = nil
     private var count = 3
@@ -65,15 +86,15 @@ class ViewController: UIViewController {
         }
         
         // If there is no camera we can just skip and test the layout
-        if AVCaptureDevice.devices().count == 0 {
-            self.captures.append(fakeImage())
-            self.captures.append(fakeImage())
-            self.captures.append(fakeImage())
-            self.captures.append(fakeImage())
-            printImages()
-            reset()
-            return
-        }
+//        if AVCaptureDevice.devices().count == 0 {
+//            self.captures.append(fakeImage())
+//            self.captures.append(fakeImage())
+//            self.captures.append(fakeImage())
+//            self.captures.append(fakeImage())
+//            printImages()
+//            reset()
+//            return
+//        }
         
         if capturing {
           return
@@ -131,6 +152,11 @@ class ViewController: UIViewController {
     
     @objc private func startCountdown() {
         funLabel?.removeFromSuperview()
+        countdownLabel?.removeFromSuperview()
+        
+        let imageContainer = captureImageViews[captures.count].superview
+        imageContainer?.addSubview(countdownLabel)
+        countdownLabel.frame = imageContainer!.bounds
         
         count = 4
         let timer = Timer(timeInterval: 1.0, target: self, selector: #selector(fireTimer(_:)), userInfo: nil, repeats: true)
@@ -142,7 +168,7 @@ class ViewController: UIViewController {
 
     @objc private func fireTimer(_ timer: Timer) {
         if count == 4 {
-            countdownLabel.text = "Get ready!"
+            countdownLabel.text = "..."
         } else {
             countdownLabel.text = "\(count)"
         }
@@ -183,7 +209,6 @@ class ViewController: UIViewController {
     private func done() {
         saveImages()
         printImages()
-        reset()
     }
     
     private func reset() {
@@ -213,19 +238,25 @@ class ViewController: UIViewController {
     private func printImages() {
         guard let printer = currentPrinter else { return }
         
-        let printInteraction = UIPrintInteractionController.shared
-        let printPageRenderer = Renderer(images: captures)
-        
-        // Create a print info object for the activity.
-        let printInfo = UIPrintInfo.printInfo()
-        printInfo.outputType = .photo
-        printInfo.jobName = "PhotoBooth"
-        printInteraction.printPageRenderer = printPageRenderer
-        printInteraction.printInfo = printInfo
-        printInteraction.print(to: printer) { (controller, printed, error) in
-            if let error = error {
-                print(error)
-                return
+        DispatchQueue.global().async {
+            let printInteraction = UIPrintInteractionController.shared
+            let printPageRenderer = Renderer(images: self.captures)
+            
+            // Create a print info object for the activity.
+            let printInfo = UIPrintInfo.printInfo()
+            printInfo.outputType = .photo
+            printInfo.jobName = "PhotoBooth"
+            printInteraction.printPageRenderer = printPageRenderer
+            printInteraction.printInfo = printInfo
+            printInteraction.print(to: printer) { (controller, printed, error) in
+                DispatchQueue.main.async {
+                    self.reset()
+                }
+                
+                if let error = error {
+                    print(error)
+                    return
+                }
             }
         }
     }
