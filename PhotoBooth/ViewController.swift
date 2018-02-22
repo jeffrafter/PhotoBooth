@@ -50,12 +50,14 @@ class ViewController: UIViewController {
     
     var currentPrinter: UIPrinter? = nil
     private var count = 3
+    private var filterIndex = 0
     
     @IBOutlet weak var countdownLabel: UILabel!
     
     @IBOutlet weak var cameraPreviewView: LiveCameraView! {
         didSet {
-            cameraPreviewView.videoGravity = .resizeAspectFill
+            cameraPreviewView.videoGravity = .scaleAspectFill
+            cameraPreviewView.gesturesEnabled = false
             
             if let device = cameraPreviewView.device() {
                 try! device.lockForConfiguration()
@@ -65,7 +67,28 @@ class ViewController: UIViewController {
                 }
                 device.unlockForConfiguration()
             }
+            
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(cameraPreviewTapped))
+            cameraPreviewView.addGestureRecognizer(tapGesture)
         }
+    }
+    
+    @objc private func cameraPreviewTapped() {
+        let filters: [CIFilter?] = [
+            CIFilter(name: "CIPhotoEffectChrome"),
+            CIFilter(name: "CIPhotoEffectFade"),
+            CIFilter(name: "CIPhotoEffectInstant"),
+            CIFilter(name: "CIPhotoEffectMono"),
+            CIFilter(name: "CIPhotoEffectNoir"),
+            CIFilter(name: "CIPhotoEffectProcess"),
+            CIFilter(name: "CIPhotoEffectTonal"),
+            CIFilter(name: "CIPhotoEffectTransfer"),
+            CIFilter(name: "CIComicEffect"),
+            CIFilter(name: "CICrystallize"),
+            nil
+        ]
+        cameraPreviewView.camera.filter = filters[filterIndex % filters.count]
+        filterIndex += 1
     }
     
     override func viewDidLoad() {

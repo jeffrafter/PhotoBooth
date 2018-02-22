@@ -9,16 +9,19 @@
 import UIKit
 import AVFoundation
 
-open class LiveCameraView: UIView {
+public class LiveCameraView: UIView, CameraDelegate {
     
-    @IBInspectable
-    open var videoGravity = AVLayerVideoGravity.resizeAspect {
+    let imageView = UIImageView()
+    
+    open let camera = Camera()
+    
+    public var videoGravity: UIViewContentMode = .scaleAspectFill {
         didSet {
-            camera.gravity = videoGravity
+            imageView.contentMode = videoGravity
         }
     }
     
-    open var gesturesEnabled: Bool = true {
+    public var gesturesEnabled: Bool = true {
         didSet {
             if gesturesEnabled {
                 addGestureRecognizer(doubleTapGesture)
@@ -28,17 +31,15 @@ open class LiveCameraView: UIView {
         }
     }
     
-    let camera = Camera()
+    open func device() -> AVCaptureDevice? {
+        return camera.device()
+    }
     
-    lazy fileprivate var doubleTapGesture: UITapGestureRecognizer = {
+    lazy private var doubleTapGesture: UITapGestureRecognizer = {
         let doubleTap = UITapGestureRecognizer(target: self, action: #selector(LiveCameraView.handleDoubleTapGesture))
         doubleTap.numberOfTapsRequired = 2
         return doubleTap
     }()
-    
-    open func device() -> AVCaptureDevice? {
-        return camera.device()
-    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -50,42 +51,59 @@ open class LiveCameraView: UIView {
         setup()
     }
     
-    open func captureStill(_ completion: @escaping (UIImage?) -> Void) {
-        camera.capturePreview { (image) in
-            completion(image)
+    public func captureStill(_ completion: @escaping (UIImage?) -> Void) {
+        if camera.hasCamera {
+            completion(imageView.image)
+        } else {
+            completion(nil)
         }
     }
     
-    fileprivate func setup() {
+    private func setup() {
         backgroundColor = UIColor.clear
         
         gesturesEnabled = true
         setupCamera()
-        camera.gravity = videoGravity
+        camera.delegate = self
+        layer.masksToBounds = true
     }
     
-    fileprivate func setupCamera() {
-        layer.addSublayer(camera.previewLayer)
+    private func setupCamera() {
+        addSubview(imageView)
+        
+        if #available(iOS 9.0, *) {
+            layoutMargins = .zero
+            let margins = layoutMarginsGuide
+            imageView.leadingAnchor.constraint(equalTo: margins.leadingAnchor).isActive = true
+            imageView.topAnchor.constraint(equalTo: margins.topAnchor).isActive = true
+            imageView.bottomAnchor.constraint(equalTo: margins.bottomAnchor).isActive = true
+            imageView.trailingAnchor.constraint(equalTo: margins.trailingAnchor).isActive = true
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+        }
         
         alpha = 0.0
         camera.startStreaming()
         UIView.animate(withDuration: 0.2, delay: 0.5, options: .curveLinear, animations: {
-                self.alpha = 1.0
-            }, completion: nil)
+            self.alpha = 1.0
+        }, completion: nil)
     }
     
-    open func flip() {
+    public func flip() {
         camera.flip()
     }
     
-    @objc fileprivate func handleDoubleTapGesture() {
+    @objc private func handleDoubleTapGesture() {
         camera.flip()
     }
     
-    override open func layoutSubviews() {
+    override public func layoutSubviews() {
         camera.previewLayer.frame = bounds
         super.layoutSubviews()
     }
     
-
+    func didReceiveFilteredImage(_ image: UIImage) {
+        DispatchQueue.main.async {
+            self.imageView.image = image
+        }
+    }
 }

@@ -9,7 +9,23 @@
 import AVFoundation
 import UIKit
 
-class Camera {
+protocol CameraDelegate: class {
+    func didReceiveFilteredImage(_ image: UIImage)
+}
+
+open class Camera: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
+    
+    weak var delegate: CameraDelegate?
+    
+    open var filter: CIFilter? = nil
+    
+    var hasCamera: Bool {
+        return AVCaptureDevice.devices().count > 0
+    }
+    
+    open func device() -> AVCaptureDevice? {
+        return input?.device
+    }
     
     var gravity = AVLayerVideoGravity.resizeAspect {
         didSet {
@@ -24,35 +40,31 @@ class Camera {
         return layer
     }()
     
-    fileprivate lazy var sessionQueue: DispatchQueue = {
+    private lazy var sessionQueue: DispatchQueue = {
         return DispatchQueue(label: "com.mikekavouras.LiveCameraView.capture_session")
     }()
     
-    fileprivate let output = AVCaptureStillImageOutput()
+    private let output = AVCaptureVideoDataOutput()
     
-    fileprivate let session = AVCaptureSession()
+    private let session = AVCaptureSession()
     
-    fileprivate var position: AVCaptureDevice.Position? {
+    private var position: AVCaptureDevice.Position? {
         guard let input = input else { return nil }
         return input.device.position
     }
     
-    fileprivate var hasCamera: Bool {
-        return AVCaptureDevice.devices().count > 0
-    }
-    
-    fileprivate var input: AVCaptureDeviceInput? {
+    private var input: AVCaptureDeviceInput? {
         guard let inputs = session.inputs as? [AVCaptureDeviceInput] else { return nil }
-        let captureDevice = inputs.filter { $0.device.hasMediaType(AVMediaType.video) }.first
-        return captureDevice
+        return inputs.filter { $0.device.hasMediaType(AVMediaType.video) }.first
     }
     
-    open func device() -> AVCaptureDevice? {
-        return input?.device
-    }
-    
-    init() {
+    override init() {
+        super.init()
+        
         session.sessionPreset = AVCaptureSession.Preset.photo
+        let queue = DispatchQueue(label: "example serial queue")
+        
+        output.setSampleBufferDelegate(self, queue: queue)
         checkPermissions()
     }
     
@@ -62,6 +74,9 @@ class Camera {
         if session.canAddOutput(output) {
             session.addOutput(output)
         }
+        
+        let connection = output.connection(with: AVFoundation.AVMediaType.video)
+        connection?.videoOrientation = .portrait
         
         sessionQueue.async { 
             self.session.startRunning()
@@ -77,66 +92,8 @@ class Camera {
         showDeviceForPosition(position == .front ? .back : .front)
         session.commitConfiguration()
     }
-    
-    func capturePreview(_ completion: @escaping (UIImage?) -> Void) {
-        
-        let done = { (image: UIImage?) in
-            DispatchQueue.main.async(execute: {
-                completion(image)
-            })
-        }
-        
-        captureImage { (buffer, error) in
-            
-            guard error == nil else {
-                done(nil)
-                return
-            }
-            
-            guard buffer != nil else {
-                done(nil)
-                return
-            }
-            
-            let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(buffer!)
-            
-            guard let image = UIImage(data: imageData!),
-                let position = self.position else {
-                    done(nil)
-                    return
-            }
-
-            if position == .front {
-                guard let cgImage = image.cgImage else {
-                    done(nil)
-                    return
-                }
-                let flipped = UIImage(cgImage: cgImage, scale: image.scale, orientation: .leftMirrored)
-                done(flipped)
-            } else {
-                done(image)
-            }
-        }
-        
-    }
-    
-    fileprivate func captureImage(_ completion: @escaping (CMSampleBuffer?, Error?) -> Void) {
-        guard hasCamera else {
-            completion(nil, nil)
-            return
-        }
-        
-        let connection = self.output.connection(with: AVMediaType.video)
-        connection?.videoOrientation = AVCaptureVideoOrientation(rawValue: UIDeviceOrientation.portrait.rawValue)!
-        
-        sessionQueue.async { () -> Void in
-            self.output.captureStillImageAsynchronously(from: connection!) { (buffer, error) -> Void in
-                completion(buffer, error)
-            }
-        }
-    }
-    
-    fileprivate func showDeviceForPosition(_ position: AVCaptureDevice.Position) {
+//        
+    private func showDeviceForPosition(_ position: AVCaptureDevice.Position) {
         guard let device = deviceForPosition(position),
             let input = try? AVCaptureDeviceInput(device: device) else {
                 return
@@ -145,16 +102,19 @@ class Camera {
         if session.canAddInput(input) {
             session.addInput(input)
         }
-    }
-    
-    fileprivate func deviceForPosition(_ position: AVCaptureDevice.Position) -> AVCaptureDevice? {
-        let devices = AVCaptureDevice.devices(for: AVMediaType.video)
-        let device = (devices.filter { $0.position == position }.first)
         
-        return device
+        let connection = output.connection(with: AVFoundation.AVMediaType.video)
+        connection?.videoOrientation = .portrait
     }
     
-    fileprivate func checkPermissions(_ completion: (() -> Void)? = nil) {
+    private func deviceForPosition(_ position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+        let allDevices = AVCaptureDevice.devices(for: AVMediaType.video)
+        let relevantDevices = allDevices.filter { $0.position == position }
+        
+        return relevantDevices.first
+    }
+    
+    private func checkPermissions(_ completion: (() -> Void)? = nil) {
         let authorizationStatus = AVCaptureDevice.authorizationStatus(for: AVMediaType.video)
         switch authorizationStatus {
         case .notDetermined:
@@ -167,5 +127,26 @@ class Camera {
         default: return
         }
     }
-    
+}
+
+// MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
+
+extension Camera {
+    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+        if #available(iOS 9.0, *) {
+            let cameraImage = CIImage(cvImageBuffer: pixelBuffer!)
+            
+            let image: UIImage
+            if let filter = filter {
+                filter.setValue(cameraImage, forKey: kCIInputImageKey)
+                image = UIImage(ciImage: filter.value(forKey: kCIOutputImageKey) as! CIImage!)
+            } else {
+                image = UIImage(ciImage: cameraImage)
+            }
+            
+        
+            delegate?.didReceiveFilteredImage(image)
+        }
+    }
 }
