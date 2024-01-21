@@ -10,6 +10,12 @@ When developing you likely want to save paper and ink. To do this, create a virt
 
 https://github.com/rodyager/RWTS-PDFwriter
 
+You can also do this with Homebrew:
+
+```
+brew install rwts-pdfwriter
+```
+
 ### Share the printer
 
 ```bash

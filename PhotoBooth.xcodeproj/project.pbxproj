@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		250FDA842AA1C5918EA2C9A4 /* Pods_PhotoBooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 525BD4953FEB31DE71618CCA /* Pods_PhotoBooth.framework */; };
+		548849082B5C727D009B7196 /* PreviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 548849072B5C727D009B7196 /* PreviewViewController.swift */; };
 		F15D8B842012E91100F237E8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15D8B832012E91100F237E8 /* AppDelegate.swift */; };
 		F15D8B862012E91100F237E8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15D8B852012E91100F237E8 /* ViewController.swift */; };
 		F15D8B892012E91100F237E8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F15D8B872012E91100F237E8 /* Main.storyboard */; };
@@ -18,6 +19,7 @@
 
 /* Begin PBXFileReference section */
 		525BD4953FEB31DE71618CCA /* Pods_PhotoBooth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PhotoBooth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		548849072B5C727D009B7196 /* PreviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewViewController.swift; sourceTree = "<group>"; };
 		D0237062A7A0651B9E5ECC6A /* Pods-PhotoBooth.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PhotoBooth.release.xcconfig"; path = "Pods/Target Support Files/Pods-PhotoBooth/Pods-PhotoBooth.release.xcconfig"; sourceTree = "<group>"; };
 		E7EC7F5DB48CDBA230A1B416 /* Pods-PhotoBooth.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PhotoBooth.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PhotoBooth/Pods-PhotoBooth.debug.xcconfig"; sourceTree = "<group>"; };
 		F15D8B802012E91100F237E8 /* PhotoBooth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoBooth.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,6 +84,7 @@
 			children = (
 				F15D8B832012E91100F237E8 /* AppDelegate.swift */,
 				F15D8B852012E91100F237E8 /* ViewController.swift */,
+				548849072B5C727D009B7196 /* PreviewViewController.swift */,
 				F15D8B952012F54500F237E8 /* Renderer.swift */,
 				F15D8B872012E91100F237E8 /* Main.storyboard */,
 				F15D8B8A2012E91100F237E8 /* Assets.xcassets */,
@@ -103,7 +106,6 @@
 				F15D8B7D2012E91100F237E8 /* Frameworks */,
 				F15D8B7E2012E91100F237E8 /* Resources */,
 				3D885976FBAA746E814CDD74 /* [CP] Embed Pods Frameworks */,
-				EB69F1447DAD254F29F9AAE1 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -126,6 +128,7 @@
 				TargetAttributes = {
 					F15D8B7F2012E91100F237E8 = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 1520;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -168,7 +171,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-PhotoBooth/Pods-PhotoBooth-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-PhotoBooth/Pods-PhotoBooth-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/LiveCameraView/LiveCameraView.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -177,7 +180,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-PhotoBooth/Pods-PhotoBooth-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PhotoBooth/Pods-PhotoBooth-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		A9C1C231278253EAFA4424F1 /* [CP] Check Pods Manifest.lock */ = {
@@ -198,21 +201,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EB69F1447DAD254F29F9AAE1 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-PhotoBooth/Pods-PhotoBooth-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -223,6 +211,7 @@
 				F15D8B862012E91100F237E8 /* ViewController.swift in Sources */,
 				F15D8B962012F54500F237E8 /* Renderer.swift in Sources */,
 				F15D8B842012E91100F237E8 /* AppDelegate.swift in Sources */,
+				548849082B5C727D009B7196 /* PreviewViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,13 +350,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = A56D86G827;
+				DEVELOPMENT_TEAM = B42KF28245;
 				INFOPLIST_FILE = PhotoBooth/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jeffrafter.PhotoBooth;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -378,13 +367,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = A56D86G827;
+				DEVELOPMENT_TEAM = B42KF28245;
 				INFOPLIST_FILE = PhotoBooth/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jeffrafter.PhotoBooth;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

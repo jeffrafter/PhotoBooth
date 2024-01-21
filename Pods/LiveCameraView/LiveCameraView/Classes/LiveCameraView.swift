@@ -13,9 +13,9 @@ public class LiveCameraView: UIView, CameraDelegate {
     
     let imageView = UIImageView()
     
-    open let camera = Camera()
+    public var camera = Camera()
     
-    public var videoGravity: UIViewContentMode = .scaleAspectFill {
+    public var videoGravity: UIView.ContentMode = .scaleAspectFill {
         didSet {
             imageView.contentMode = videoGravity
         }

@@ -140,7 +140,7 @@ extension Camera {
             let image: UIImage
             if let filter = filter {
                 filter.setValue(cameraImage, forKey: kCIInputImageKey)
-                image = UIImage(ciImage: filter.value(forKey: kCIOutputImageKey) as! CIImage!)
+                image = UIImage(ciImage: filter.value(forKey: kCIOutputImageKey) as! CIImage)
             } else {
                 image = UIImage(ciImage: cameraImage)
             }

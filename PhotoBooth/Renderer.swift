@@ -37,11 +37,13 @@ class Renderer: UIPrintPageRenderer {
     // MARK: Properties
     
     var images: [UIImage]
+    var background: UIImage
     
     // MARK: Initilization
     
-    init(images: [UIImage]) {
+    init(images: [UIImage], background: UIImage) {
         self.images = images
+        self.background = background
     }
     
     // MARK: UIPrintPageRenderer Overrides
@@ -62,6 +64,23 @@ class Renderer: UIPrintPageRenderer {
         
         let imageWidth = CGFloat(96.0)
         let imageHeight = CGFloat(96.0)
+
+        // Draw the background image first and make it aspect fill for the page
+        let bg = background
+        let bgWidth = bg.size.width
+        let bgHeight = bg.size.height
+        let bgRatio = bgWidth / bgHeight
+        let bgRect: CGRect
+        if bgRatio > 1 {
+            let bgHeight = height
+            let bgWidth = bgHeight * bgRatio
+            bgRect = CGRect(x: (width - bgWidth) / 2, y: 0, width: bgWidth, height: bgHeight)
+        } else {
+            let bgWidth = width
+            let bgHeight = bgWidth / bgRatio
+            bgRect = CGRect(x: 0, y: (height - bgHeight) / 2, width: bgWidth, height: bgHeight)
+        }
+        bg.draw(in: bgRect)
         
         // Two photos across like: [ space PHOTO space | space PHOTO space ]
         let horzSpace = (width - (2 * imageWidth) - 1) / 4

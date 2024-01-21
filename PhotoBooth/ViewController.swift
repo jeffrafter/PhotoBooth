@@ -2,10 +2,9 @@
 //  ViewController.swift
 //  PhotoBooth
 //
-//  Created by Jeff Rafter on 1/19/18.
-//  Copyright © 2018 Rplcat. All rights reserved.
+//  Created by Jeff Rafter, Mike Kavouras on 1/19/18.
+//  Copyright © 2018-2024. All rights reserved.
 //
-
 import UIKit
 import LiveCameraView
 import AVFoundation
@@ -19,12 +18,13 @@ extension Array {
 
 class ViewController: UIViewController {
     
+    var COUNTDOWN_PAUSE = 0.3 // 3.0
+    
     var funLabel: UILabel? = nil
     
     var capturing = false {
         didSet {
-            captureButton.isHidden = capturing
-            captureStackView.isHidden = !capturing
+            // Do something
         }
     }
     
@@ -32,10 +32,15 @@ class ViewController: UIViewController {
         didSet {
             if captures.isEmpty {
                 captureImageViews.forEach { $0.image = nil }
+                captureStackView.isHidden = true
             } else {
                 let index = captures.count - 1
                 captureImageViews[index].image = captures[index]
+                captureStackView.isHidden = false
             }
+            
+            printButton.isEnabled = captures.count == 4
+            printButton.alpha = printButton.isEnabled ? 1 : 0.5
         }
     }
     
@@ -48,6 +53,13 @@ class ViewController: UIViewController {
         }
     }
     
+    @IBOutlet weak var printButton: UIButton! {
+        didSet {
+            printButton.layer.cornerRadius = printButton.frame.size.height / 2
+        }
+    }
+    
+    var background: UIImage = UIImage(named: "Flowers4")!
     var currentPrinter: UIPrinter? = nil
     private var count = 3
     private var filterIndex = 0
@@ -58,6 +70,7 @@ class ViewController: UIViewController {
         didSet {
             cameraPreviewView.videoGravity = .scaleAspectFill
             cameraPreviewView.gesturesEnabled = false
+            cameraPreviewView.transform = CGAffineTransform(scaleX: -1, y: 1);
             
             if let device = cameraPreviewView.device() {
                 try! device.lockForConfiguration()
@@ -74,7 +87,10 @@ class ViewController: UIViewController {
     }
     
     @objc private func cameraPreviewTapped() {
-        let filters: [CIFilter?] = [
+        var filters: [CIFilter?] = [
+            CIFilter(name: "CIColorMonochrome"),
+            CIFilter(name: "CIColorPosterize"),
+            CIFilter(name: "CIFalseColor"),
             CIFilter(name: "CIPhotoEffectChrome"),
             CIFilter(name: "CIPhotoEffectFade"),
             CIFilter(name: "CIPhotoEffectInstant"),
@@ -83,10 +99,46 @@ class ViewController: UIViewController {
             CIFilter(name: "CIPhotoEffectProcess"),
             CIFilter(name: "CIPhotoEffectTonal"),
             CIFilter(name: "CIPhotoEffectTransfer"),
+            CIFilter(name: "CISepiaTone"),
             CIFilter(name: "CIComicEffect"),
             CIFilter(name: "CICrystallize"),
+            CIFilter(name: "CIBloom"),
+            CIFilter(name: "CIHexagonalPixellate"),
+            CIFilter(name: "CILineOverlay"),
+            CIFilter(name: "CIPixellate"),
+            CIFilter(name: "CIPointillize"),
+            CIFilter(name: "CISpotColor"),
+            // CIFilter(name: "CIKaleidoscope"),
             nil
         ]
+        
+        let filterNames = [
+            "CIColorMonochrome",
+            "CIColorPosterize",
+            "CIFalseColor",
+            "CIPhotoEffectChrome",
+            "CIPhotoEffectFade",
+            "CIPhotoEffectInstant",
+            "CIPhotoEffectMono",
+            "CIPhotoEffectNoir",
+            "CIPhotoEffectProcess",
+            "CIPhotoEffectTonal",
+            "CIPhotoEffectTransfer",
+            "CISepiaTone",
+            "CIComicEffect",
+            "CICrystallize",
+            "CIBloom",
+            "CIHexagonalPixellate",
+            "CILineOverlay",
+            "CIPixellate",
+            "CIPointillize",
+            "SpotColor",
+            // "Kaleidoscope",
+            ""
+        ]
+        print(filterNames[filterIndex % filters.count])
+
+        
         cameraPreviewView.camera.filter = filters[filterIndex % filters.count]
         filterIndex += 1
     }
@@ -94,6 +146,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         countdownLabel.alpha = 0
+        printButton.isEnabled = false
+        printButton.alpha = 0.5
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -108,24 +162,33 @@ class ViewController: UIViewController {
             return
         }
         
-        // If there is no camera we can just skip and test the layout
-//        if AVCaptureDevice.devices().count == 0 {
-//            self.captures.append(fakeImage())
-//            self.captures.append(fakeImage())
-//            self.captures.append(fakeImage())
-//            self.captures.append(fakeImage())
-//            printImages()
-//            reset()
-//            return
-//        }
-        
         if capturing {
           return
         }
+        reset()
         capturing = true
+        
+        // If there is no camera we can just skip and test the layout
+        if AVCaptureDevice.devices().count == 0 {
+            self.captures.append(fakeImage())
+            self.captures.append(fakeImage())
+            self.captures.append(fakeImage())
+            self.captures.append(fakeImage())
+            return
+        }
+        
         count = 3
         showEncouragingPhrase()
     }
+    
+    @IBAction func printButtonTapped(_ sender: Any) {
+        if self.captures.count < 4 {
+            return
+        }
+        printImages()
+        reset()
+    }
+    
 
     @objc private func showEncouragingPhrase() {
         countdownLabel.alpha = 0
@@ -156,8 +219,8 @@ class ViewController: UIViewController {
         funLabel?.adjustsFontSizeToFitWidth = true
         funLabel?.textAlignment = .center
         
-        let timer = Timer(timeInterval: 3.0, target: self, selector: #selector(startCountdown), userInfo: nil, repeats: false)
-        RunLoop.current.add(timer, forMode: .defaultRunLoopMode)
+        let timer = Timer(timeInterval: COUNTDOWN_PAUSE, target: self, selector: #selector(startCountdown), userInfo: nil, repeats: false)
+        RunLoop.current.add(timer, forMode: .default)
     }
     
     func createFunLabel(_ string: String) -> UILabel {
@@ -184,7 +247,7 @@ class ViewController: UIViewController {
         count = 4
         let timer = Timer(timeInterval: 1.0, target: self, selector: #selector(fireTimer(_:)), userInfo: nil, repeats: true)
         
-        RunLoop.current.add(timer, forMode: .defaultRunLoopMode)
+        RunLoop.current.add(timer, forMode: .default)
         
         fireTimer(timer)
     }
@@ -230,8 +293,15 @@ class ViewController: UIViewController {
     }
     
     private func done() {
+        countdownLabel.alpha = 0
+        capturing = false
         saveImages()
-        printImages()
+//        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//        if let vc = storyboard.instantiateViewController(withIdentifier: "PreviewController") as? PreviewViewController {
+//            vc.captures = self.captures
+//            vc.currentPrinter = self.currentPrinter
+//            present(vc, animated: true)
+//        }
     }
     
     private func reset() {
@@ -257,32 +327,7 @@ class ViewController: UIViewController {
             print("Saved \(image)")
         }
     }
-
-    private func printImages() {
-        guard let printer = currentPrinter else { return }
-        
-        DispatchQueue.global().async {
-            let printInteraction = UIPrintInteractionController.shared
-            let printPageRenderer = Renderer(images: self.captures)
-            
-            // Create a print info object for the activity.
-            let printInfo = UIPrintInfo.printInfo()
-            printInfo.outputType = .photo
-            printInfo.jobName = "PhotoBooth"
-            printInteraction.printPageRenderer = printPageRenderer
-            printInteraction.printInfo = printInfo
-            printInteraction.print(to: printer) { (controller, printed, error) in
-                DispatchQueue.main.async {
-                    self.reset()
-                }
-                
-                if let error = error {
-                    print(error)
-                    return
-                }
-            }
-        }
-    }
+    
     
     private func selectPrinter() {
         let pickerController = UIPrinterPickerController(initiallySelectedPrinter: nil)
@@ -290,5 +335,29 @@ class ViewController: UIViewController {
             self.currentPrinter = controller.selectedPrinter
         })
     }
+    
+    private func printImages() {
+        guard let printer = currentPrinter else { return }
+                        
+        let printInteraction = UIPrintInteractionController.shared
+        let printPageRenderer = Renderer(images: self.captures, background: self.background)
+        
+        // Create a print info object for the activity.
+        let printInfo = UIPrintInfo.printInfo()
+        printInfo.outputType = .photo
+        printInfo.jobName = "PhotoBooth"
+        printInteraction.printPageRenderer = printPageRenderer
+        printInteraction.printInfo = printInfo
+        printInteraction.print(to: printer) { (controller, printed, error) in
+            self.reset()
+            
+            if let error = error {
+                print(error)
+                return
+            }
+        }
+   
+    }
+
 }
 
